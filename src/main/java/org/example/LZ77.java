@@ -3,7 +3,7 @@ package org.example;
 import java.io.*;
 import java.util.ArrayList;
 
-class LZ77 {
+public class LZ77 {
     public static class Trio {
         int offset;
         int length;
@@ -16,7 +16,7 @@ class LZ77 {
         }
     }
 
-    public ArrayList<Trio> compress(String input, int windowSize) {
+    private ArrayList<Trio> compress(String input, int windowSize) {
         ArrayList<Trio> compressedData = new ArrayList<>();
         int lookAheadBufferSize = windowSize;
         int searchBufferStart = 0;
@@ -25,8 +25,11 @@ class LZ77 {
             int maxLength = 0;
             int offset = 0;
 
+            // Используем for-each цикл для более ясного кода
             for (int i = Math.max(0, searchBufferStart - windowSize); i < searchBufferStart; i++) {
                 int length = 0;
+
+                // Используем Math.min, чтобы избежать выхода за пределы строки
                 while (length < lookAheadBufferSize && searchBufferStart + length < input.length()
                         && input.charAt(i + length) == input.charAt(searchBufferStart + length)) {
                     length++;
@@ -47,7 +50,7 @@ class LZ77 {
     }
 
 
-    public String decompress(ArrayList<Trio> compressedData) {
+    private String decompress(ArrayList<Trio> compressedData) {
         StringBuilder decompressedData = new StringBuilder();
 
         for (Trio trio : compressedData) {
@@ -66,7 +69,7 @@ class LZ77 {
         return decompressedData.toString();
     }
 
-    public byte[] convertToBytes(ArrayList<Trio> compressedData) throws IOException {
+    private byte[] convertToBytes(ArrayList<Trio> compressedData) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
 
@@ -80,7 +83,7 @@ class LZ77 {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public ArrayList<Trio> convertFromBytes(byte[] bytes) throws IOException {
+    private ArrayList<Trio> convertFromBytes(byte[] bytes) throws IOException {
         ArrayList<Trio> compressedData = new ArrayList<>();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
         DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
@@ -95,13 +98,12 @@ class LZ77 {
         dataInputStream.close();
         return compressedData;
     }
-    public static void main(String[] args) {
-        LZ77 lz77 = new LZ77();
 
-        // Чтение данных из input.txt
+    public void compress (String file_path_input , String file_path_to_archive){
+
         StringBuilder inputData = new StringBuilder();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\BoSS JR\\OneDrive\\Рабочий стол\\Учёба\\LZ77_algoritm\\src\\input.txt"));
+            BufferedReader reader = new BufferedReader(new FileReader(file_path_input));
             String line;
             while ((line = reader.readLine()) != null) {
                 inputData.append(line);
@@ -111,38 +113,38 @@ class LZ77 {
             e.printStackTrace();
         }
 
-        // Сжатие данных
-        ArrayList<Trio> compressedData = lz77.compress(inputData.toString() , 500);
-        for (int i = 0; i < compressedData.size();i++){
-            System.out.println("<"+compressedData.get(i).length+","+compressedData.get(i).offset+","+compressedData.get(i).nextChar+">");
-        }
-        // Преобразование сжатых данных в байты и запись в архивный файл
+
+        ArrayList<Trio> compressedData = compress(inputData.toString() , 500);
+
+
         try {
-            byte[] compressedBytes = lz77.convertToBytes(compressedData);
-            FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\BoSS JR\\OneDrive\\Рабочий стол\\Учёба\\LZ77_algoritm\\src\\archive.txt");
+            byte[] compressedBytes = convertToBytes(compressedData);
+            FileOutputStream fileOutputStream = new FileOutputStream(file_path_to_archive);
             fileOutputStream.write(compressedBytes);
             fileOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
-        // Чтение сжатых данных из архивного файла
+    public void decompress (String file_path_output , String file_path_to_archive){
+
         try {
-            FileInputStream fileInputStream = new FileInputStream("C:\\Users\\BoSS JR\\OneDrive\\Рабочий стол\\Учёба\\LZ77_algoritm\\src\\archive.txt");
+            FileInputStream fileInputStream = new FileInputStream(file_path_to_archive);
             byte[] readBytes = new byte[fileInputStream.available()];
             fileInputStream.read(readBytes);
             fileInputStream.close();
 
-            // Обратное преобразование из байтов и распаковка данных
-            ArrayList<Trio> readCompressedData = lz77.convertFromBytes(readBytes);
-            String decompressedData = lz77.decompress(readCompressedData);
+            ArrayList<Trio> readCompressedData = convertFromBytes(readBytes);
+            String decompressedData = decompress(readCompressedData);
 
-            // Запись распакованных данных в output.txt
-            BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\BoSS JR\\OneDrive\\Рабочий стол\\Учёба\\LZ77_algoritm\\src\\output.txt"));
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file_path_output));
             writer.write(decompressedData);
             writer.close();
         } catch (Exception e){
             System.out.println("erorr");
         }
     }
+
 }
